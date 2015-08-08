@@ -477,7 +477,7 @@ nf,nt = shape(cohtab)
 freq = linspace(0,outfs/2,nf)
 
 page.h1('Top %d coherences at all frequencies' % wtop)
-page.h2('GPS %d (%s) + %d s' % (gpsb, gps2str(gpsb), dt))
+page.h2('GPS %d + %d s' % (gpsb, dt))
 
 page.table(border=1, style='font-size:12px')
 page.tr()
