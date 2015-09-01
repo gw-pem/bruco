@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Brute force coherence (Gabriele Vajente, 2015-06-16)
+# Brute force coherence (Gabriele Vajente, 2015-09-01)
 # 
 # Command line arguments (with default values)
 #
@@ -46,6 +46,10 @@
 # 2015-06-11 - using gw_data_find to locate the GWF files
 # 2015-06-16 - added calibration transfer function option
 #            - added expanduser to all paths to allow use of ~
+# 2015-08-19 - now bruco removes the temporary files that contains the list of channels
+# 	     - timing information file is saved into the output directory
+# 2015-01-01 - x3 faster plotting based on Michele Valentini's code
+
 import numpy
 import os
 import matplotlib
@@ -71,7 +75,7 @@ warnings.filterwarnings("ignore")
 # this file contains the list of channels to exclude
 exc = 'bruco_excluded_channels.txt'
 # where to save temporary gwf cache
-scratchdir = '/tmp/bruco_tmp'
+scratchdir = '~/tmp'
 
 # this variable will contain the calibration transfer function, need to 
 # declare it here to make it global
@@ -93,6 +97,11 @@ def parallelized_coherence(args):
     # init timing variables
     timing = numpy.zeros(5)
 
+    # initialize figure and plot
+    if opt.plotformat != 'none':
+        fig, ax = subplots(2, 1, sharex=True)
+	firstplot = True
+    
     # analyze every channel in the list
     for channel2,i in zip(channels,arange(len(channels))):
         print "  Process %d: channel %d of %d: %s" % (id, i+1, len(channels), channel2)
@@ -158,40 +167,43 @@ def parallelized_coherence(args):
         # create the output plot, if desired, and with the desired format
 	timing[4] = timing[4] - time.time()
         if opt.plotformat != "none":
-            figure()
-            subplot(211)
-            title('Coherence %s vs %s - GPS %d' % (opt.channel, channel2, gpsb), fontsize='smaller')
-            loglog(f, c, f, ones(shape(f))*s, 'r--', linewidth=0.5)
-            if xmin != -1:
-                xlim([xmin,xmax])
-            else:
-                axis(xmax=outfs/2)
-            axis(ymin=s/2, ymax=1)
-            grid(True)
-            ylabel('Coherence')
-            #legend(('Coherence', 'Statistical significance'))
-	    subplot(212)
-            loglog(f1, psd_plot[0:len(f1)])
-            mask = ones(shape(f))
+ 	    mask = ones(shape(f))
             mask[c<s] = nan
-            loglog(f, psd_plot[0:len(psd2)] * sqrt(c) * mask, 'r')
-            if xmin != -1:
-		xlim([xmin,xmax])
-	    else:
-	    	axis(xmax=outfs/2)
-	    if ymin != -1:
-		ylim([ymin, ymax])
-            xlabel('Frequency [Hz]')
-	    ylabel('Spectrum')
-	    legend(('Target channel', 'Noise projection'))
-            grid(True)
-            
-            savefig(os.path.expanduser(opt.dir) + '/%s.%s' % (channel2.split(':')[1], opt.plotformat), format=opt.plotformat)
-            close()
+	    # faster plotting, create all the figure and axis stuff once for all
+	    if firstplot:
+            	pltitle = ax[0].set_title('Coherence %s vs %s - GPS %d' % (opt.channel, channel2, gpsb), fontsize='smaller')
+            	line1, line2 = ax[0].loglog(f, c, f, ones(shape(f))*s, 'r--', linewidth=0.5)
+            	if xmin != -1:
+                    ax[0].axis(xmin=xmin,xmax=xmax)
+            	else:
+                    ax[0].axis(xmax=outfs/2)
+            	ax[0].axis(ymin=s/2, ymax=1)
+            	ax[0].grid(True)
+                ax[0].set_ylabel('Coherence')
+            	line3, = ax[1].loglog(f1, psd_plot[0:len(f1)])
+            	line4, = ax[1].loglog(f, psd_plot[0:len(psd2)] * sqrt(c) * mask, 'r')
+            	if xmin != -1:
+		    ax[1].axis(xmin=xmin, xmax=xmax)
+	   	else:
+	    	    ax[1].axis(xmax=outfs/2)
+	    	if ymin != -1:
+		    ax[1].axis(ymin=ymin, ymax=ymax)
+            	ax[1].set_xlabel('Frequency [Hz]')
+	    	ax[1].set_ylabel('Spectrum')
+	    	ax[1].legend(('Target channel', 'Noise projection'))
+            	ax[1].grid(True)
+		firstplot = False
+            else:
+		# if not the first plot, just update the traces and title
+		pltitle.set_text('Coherence %s vs %s - GPS %d' % (opt.channel, channel2, gpsb))
+		line1.set_data(f, c)
+		line4.set_data(f, psd_plot[0:len(psd2)] * sqrt(c) * mask)
+            fig.savefig(os.path.expanduser(opt.dir) + '/%s.%s' % (channel2.split(':')[1], opt.plotformat), format=opt.plotformat)
         timing[4] = timing[4] + time.time()
 
         del ch2, c, f
            
+    del fig
     print "  Process %s concluded" % id
     return cohtab, idxtab, id, timing
 
@@ -269,7 +281,7 @@ else:
 
 print
 print "**********************************************************************"
-print "**** BruCo version 2015-02-24 - parallelized multicore processing ****"
+print "**** BruCo version 2015-09-01 - parallelized multicore processing ****"
 print "**********************************************************************"
 print "Analyzing data from gps %d to %d.\n" % (gpsb, gpse)
 print
@@ -292,7 +304,7 @@ files = find_LIGO_data(opt.ifo, gpsb, gpsb+dt)
 
 # create the cache file
 c = lal.Cache.from_urls(files)
-d = frutils.FrameCache(c, scratchdir=scratchdir, verbose=True)
+d = frutils.FrameCache(c, scratchdir=os.path.expanduser(scratchdir), verbose=True)
 
 ###### Extract the list of channels and remove undesired ones ######################
 
@@ -312,6 +324,8 @@ for l in lines:
         sample_rate.append(int(ll[1]))
 channels = array(channels)
 sample_rate = array(sample_rate)
+# remove temporary channel list
+os.system('rm bruco.channels')
 
 # keep only channels with high enough sampling rate
 idx = find(sample_rate >= minfs)
@@ -445,7 +459,7 @@ idxtab = idxtab[:,-ntop:]
 
 # get and save timing information
 timing = concatenate(x[3], axis=1)
-numpy.savetxt('brucotiming.txt', timing)
+numpy.savetxt(os.path.expanduser(opt.dir) + '/brucotiming.txt', timing)
 
 ###### Here we save the results to some files in the output directory ####################
 
