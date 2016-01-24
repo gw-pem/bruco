@@ -47,8 +47,16 @@ setup(name=DISTNAME,
       include_package_data=True,
       scripts=scripts,
       requires=[
+          'numpy',
+          'scipy',
+          'matplotlib',
+          'glue',
+          'pylal',
       ],
       install_requires=[
+      ],
+      dependency_links=[
+          'http://software.ligo.org/lscsoft/source/glue-1.49.1.tar.gz',
       ],
       use_2to3=True,
       classifiers=[
