@@ -57,7 +57,6 @@ matplotlib.use("Agg", warn=False)
 from optparse import OptionParser
 from pylab import *
 import time
-import markup
 import fnmatch
 import scipy.stats
 import sys
@@ -70,6 +69,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 from bruco.functions import *
+from bruco.html import markup
 
 ##### Options and configurations ###########################
 
