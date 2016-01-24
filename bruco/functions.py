@@ -26,7 +26,7 @@ def computeFFTs(x, npoints, noverlap, fs):
 
     # compute all FFTs
     for i in range(nsegs):
-	segs[:,i] = rfft( detrend_linear(x[ind[i]:ind[i]+npoints]) * wind)
+        segs[:,i] = rfft( detrend_linear(x[ind[i]:ind[i]+npoints]) * wind)
 
     # normalization to get PSD with |fft|^2
     segs = segs * sqrt(2.0/fs / sum(wind**2))
@@ -36,12 +36,12 @@ def computeFFTs(x, npoints, noverlap, fs):
 
 # Convert GPS time to string time (not sure if the conversion constant is still good)
 def gps2str(gps, zone='utc'):
-	"""Convert GPS to string time"""
-	if (zone == 'utc'):
-		tz = time.mktime(time.gmtime()) - time.mktime(time.localtime())
-		return time.ctime(gps + 315964785 + tz) + ' UTC'
-	else:
-		return time.ctime(gps + 315964785)
+    """Convert GPS to string time"""
+    if (zone == 'utc'):
+        tz = time.mktime(time.gmtime()) - time.mktime(time.localtime())
+        return time.ctime(gps + 315964785 + tz) + ' UTC'
+    else:
+        return time.ctime(gps + 315964785)
 
 # return the actual GPS time  (not sure if the conversion constant is still good)
 def gps_now():
@@ -67,8 +67,8 @@ def cohe_color(c):
 # Custom decimation function, copied a long time ago from somewhere on the web
 def decimate(x, q, n=None, ftype='iir', axis=-1):
     """downsample the signal x by an integer factor q, using an order n filter
-    
-    By default, an order 8 Chebyshev type I filter is used or a 30 point FIR 
+
+    By default, an order 8 Chebyshev type I filter is used or a 30 point FIR
     filter with hamming window if ftype is 'fir'.
 
     (port to python of the GNU Octave function decimate.)
@@ -80,7 +80,7 @@ def decimate(x, q, n=None, ftype='iir', axis=-1):
              'fir' filter)
         ftype -- type of the filter; can be 'iir' or 'fir'
         axis -- the axis along which the filter should be applied
-    
+
     Outputs:
         y -- the downsampled signal
 
@@ -117,7 +117,7 @@ def newline_name(s):
         if len(idx) !=0:
             newstr = ''
             for i in range(len(idx)):
-                if i == 0: 
+                if i == 0:
                     newstr = s[0:idx[0]]
                 else:
                     newstr = newstr + "<br>" + s[idx[i-1]:idx[i]]
@@ -131,7 +131,7 @@ def newline_name(s):
 # wrapper around the LIGO function to find where data is, returns a list of files
 def find_LIGO_data(observatory, gpsb, gpse):
     o = subprocess.Popen(["/usr/bin/gw_data_find", "-o", observatory[0],
-                    		"-t", observatory[0] + "1_R", "-s", str(gpsb), "-e", str(gpse), "-u", "file"],
-                        	stdout=subprocess.PIPE).communicate()[0]        
+                          "-t", observatory[0] + "1_R", "-s", str(gpsb),
+                          "-e", str(gpse), "-u", "file"],
+                          stdout=subprocess.PIPE).communicate()[0]
     return o.splitlines()
-    

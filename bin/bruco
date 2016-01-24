@@ -1,41 +1,41 @@
 #!/usr/bin/python
 
 # Brute force coherence (Gabriele Vajente, 2015-09-01)
-# 
+#
 # Command line arguments (with default values)
 #
 # --ifo                       interferometer prefix (no default, must specify)
 # --channel=OAF-CAL_DARM_DQ   name of the main channel
 # --gpsb=1087975458           starting time
 # --length=180                amount of data to use (in seconds)
-# --outfs=8192                sampling frequency of the output results (coherence will 
+# --outfs=8192                sampling frequency of the output results (coherence will
 #                             be computed up to outfs/2 if possible)
 # --minfs=512                 skip all channels with samplig frequency smaller than this
 # --naver=100                 number of averages to compute the coherence
 # --dir=bruco                 output directory
-# --top=100                   for each frequency, save to cohtab.txt and idxtab.txt this 
+# --top=100                   for each frequency, save to cohtab.txt and idxtab.txt this
 #                             maximum number of coherence channels
-# --webtop=20                 show this number of coherence channels per frequency, in the 
+# --webtop=20                 show this number of coherence channels per frequency, in the
 #                             web page summary
 # --plot=png                  plot format (png, pdf, none)
 # --nproc                     number of processes to use (if not specified, use all CPUs)
-# --calib	              name of a text file containing the calibration transfer 
-#			      function to be applied to the target channel spectrum, in 
-#			      a two column format (frequency, absolute value)
+# --calib                     name of a text file containing the calibration transfer
+#                             function to be applied to the target channel spectrum, in
+#                             a two column format (frequency, absolute value)
 # --xlim                      limits for the frequency axis in plots, in the format fmin:fmax
 # --ylim                      limits for the y axis in PSD plots, in the format ymin:ymax
 #
 # Example:
 # ./bruco.py --ifo=H1 --channel=CAL-DELTAL_EXTERNAL_DQ --calib=lho_darm_calibration.txt --gpsb=1111224016 --length=600 --outfs=4096 --naver=100 --dir=./bruco_1111224016 --top=100 --webtop=20 --xlim=1:1000 --ylim=1e-20:1e-14
 #
-# To properly run the script, you need to setup a couple of more things. On line 52 you 
-# must define where the lits of excluded channels is. The default is the same directory, 
-# in a file called 'bruco_excluded_channels.txt'. On line 54 you must set up a scratch 
+# To properly run the script, you need to setup a couple of more things. On line 52 you
+# must define where the lits of excluded channels is. The default is the same directory,
+# in a file called 'bruco_excluded_channels.txt'. On line 54 you must set up a scratch
 # directory where the frame library will save the temporary GWF files.
 #
 #
 # CHANGELOG:
-# 
+#
 # 2015-01-29 - added linear detrending in PSD and coherence to improve low frequency bins
 # 2015-02-16 - split coherence computation into PSDs and CSDs to remove redundant compuation of main channel PSD (still room to improve here)
 #            - removed upsampling of channels with lower sampling rate (now coherences are always computed with the minimum possible number of samples)
@@ -47,7 +47,7 @@
 # 2015-06-16 - added calibration transfer function option
 #            - added expanduser to all paths to allow use of ~
 # 2015-08-19 - now bruco removes the temporary files that contains the list of channels
-# 	     - timing information file is saved into the output directory
+#            - timing information file is saved into the output directory
 # 2015-01-01 - x3 faster plotting based on Michele Valentini's code
 
 import numpy
@@ -78,13 +78,13 @@ exc = 'bruco_excluded_channels.txt'
 # where to save temporary gwf cache
 scratchdir = '~/tmp'
 
-# this variable will contain the calibration transfer function, need to 
+# this variable will contain the calibration transfer function, need to
 # declare it here to make it global
 calibration = []
 psd_plot = []
 
 # do some timing
-start_time = time.time()  
+start_time = time.time()
 
 ##### Parallelized data access and coherence computation ########
 def parallelized_coherence(args):
@@ -101,15 +101,15 @@ def parallelized_coherence(args):
     # initialize figure and plot
     if opt.plotformat != 'none':
         fig, ax = subplots(2, 1, sharex=True)
-	firstplot = True
-    
+        firstplot = True
+
     # analyze every channel in the list
     for channel2,i in zip(channels,arange(len(channels))):
         print "  Process %d: channel %d of %d: %s" % (id, i+1, len(channels), channel2)
-    
+
         # read auxiliary channel
         timing[0] = timing[0] - time.time()
-	try:
+        try:
             buffer = d.fetch(channel2, gpsb, gpse)
         except:
             print "  Process %d: some error occurred in channel %s: %s", (id, channel2, sys.exc_info())
@@ -118,42 +118,42 @@ def parallelized_coherence(args):
         # extract the channel and the sampling frequency
         ch2 = numpy.array(buffer)
         fs2 = len(ch2) / dt
-	timing[0] = timing[0] + time.time()
-	
-	# check if the channel is flat, and skip it if so
+        timing[0] = timing[0] + time.time()
+
+        # check if the channel is flat, and skip it if so
         if min(ch2) == max(ch2):
             print "  Process %d: %s is flat, skipping" % (id, channel2)
             continue
-    
+
         # resample to outfs if needed
         if fs2 > outfs:
-	    timing[1] = timing[1] - time.time()
+            timing[1] = timing[1] - time.time()
             # here I'm using a custom decimate function, defined in functions.py
             ch2 = decimate(ch2, int(fs2 / outfs))
             fs2 = outfs
-	    timing[1] = timing[1] + time.time() 
-    
+            timing[1] = timing[1] + time.time()
+
         ###### compute coherence
-	timing[2] = timing[2] - time.time()
-        # compute all the FFTs of the aux channel (those FFTs are returned already normalized 
+        timing[2] = timing[2] - time.time()
+        # compute all the FFTs of the aux channel (those FFTs are returned already normalized
         # so that the MATLAB-like scaled PSD is just sum |FFT|^2
         ch2_ffts = computeFFTs(ch2, npoints*fs2/outfs, npoints*fs2/outfs/2, fs2)
         # average to get PSDs and CSDs, create frequency vector
-        psd2 = mean(abs(ch2_ffts)**2,1) 
+        psd2 = mean(abs(ch2_ffts)**2,1)
         f = linspace(0, fs2/2, npoints*fs2/outfs/2+1)
-        csd12 = mean(conjugate(ch2_ffts)*ch1_ffts[0:npoints*fs2/outfs/2+1,:],1) 
+        csd12 = mean(conjugate(ch2_ffts)*ch1_ffts[0:npoints*fs2/outfs/2+1,:],1)
         # we use the full sampling PSD of the main channel, using only the bins corresponding to channel2 sampling
         c = abs(csd12)**2/(psd2 * psd1[0:len(psd2)])
-        timing[2] = timing[2] + time.time()    
-	
+        timing[2] = timing[2] + time.time()
+
         # save coherence in summary table. Basically, cohtab has a row for each frequency bin and a number of
         # columns which is determined by the option --top. For each frequency bin, the new coherence value is added
-        # only if it's larger than the minimum already present. Then idxtab contains again a row for each frequency 
+        # only if it's larger than the minimum already present. Then idxtab contains again a row for each frequency
         # bin: but in this case each entry is an unique index that determines the channel that gave that coherence.
         # So for example cohtab[100,0] gives the highest coherence for the 100th frequency bin; idxtab[100,0] contains
-        # an integer id that corresponds to the channel. This id is saved in channels.txt  
+        # an integer id that corresponds to the channel. This id is saved in channels.txt
         timing[3] = timing[3] - time.time()
-	for cx,j in zip(c,arange(len(c))):
+        for cx,j in zip(c,arange(len(c))):
             top = cohtab[j, :]
             idx = idxtab[j, :]
             if cx > min(top):
@@ -164,46 +164,46 @@ def parallelized_coherence(args):
                 cohtab[j, :] = ttop[ii]
                 idxtab[j, :] = iidx[ii]
         timing[3] = timing[3] + time.time()
-        
+
         # create the output plot, if desired, and with the desired format
-	timing[4] = timing[4] - time.time()
+        timing[4] = timing[4] - time.time()
         if opt.plotformat != "none":
- 	    mask = ones(shape(f))
+            mask = ones(shape(f))
             mask[c<s] = nan
-	    # faster plotting, create all the figure and axis stuff once for all
-	    if firstplot:
-            	pltitle = ax[0].set_title('Coherence %s vs %s - GPS %d' % (opt.channel, channel2, gpsb), fontsize='smaller')
-            	line1, line2 = ax[0].loglog(f, c, f, ones(shape(f))*s, 'r--', linewidth=0.5)
-            	if xmin != -1:
+            # faster plotting, create all the figure and axis stuff once for all
+            if firstplot:
+                pltitle = ax[0].set_title('Coherence %s vs %s - GPS %d' % (opt.channel, channel2, gpsb), fontsize='smaller')
+                line1, line2 = ax[0].loglog(f, c, f, ones(shape(f))*s, 'r--', linewidth=0.5)
+                if xmin != -1:
                     ax[0].axis(xmin=xmin,xmax=xmax)
-            	else:
+                else:
                     ax[0].axis(xmax=outfs/2)
-            	ax[0].axis(ymin=s/2, ymax=1)
-            	ax[0].grid(True)
+                ax[0].axis(ymin=s/2, ymax=1)
+                ax[0].grid(True)
                 ax[0].set_ylabel('Coherence')
-            	line3, = ax[1].loglog(f1, psd_plot[0:len(f1)])
-            	line4, = ax[1].loglog(f, psd_plot[0:len(psd2)] * sqrt(c) * mask, 'r')
-            	if xmin != -1:
-		    ax[1].axis(xmin=xmin, xmax=xmax)
-	   	else:
-	    	    ax[1].axis(xmax=outfs/2)
-	    	if ymin != -1:
-		    ax[1].axis(ymin=ymin, ymax=ymax)
-            	ax[1].set_xlabel('Frequency [Hz]')
-	    	ax[1].set_ylabel('Spectrum')
-	    	ax[1].legend(('Target channel', 'Noise projection'))
-            	ax[1].grid(True)
-		firstplot = False
+                line3, = ax[1].loglog(f1, psd_plot[0:len(f1)])
+                line4, = ax[1].loglog(f, psd_plot[0:len(psd2)] * sqrt(c) * mask, 'r')
+                if xmin != -1:
+                    ax[1].axis(xmin=xmin, xmax=xmax)
+                else:
+                    ax[1].axis(xmax=outfs/2)
+                if ymin != -1:
+                    ax[1].axis(ymin=ymin, ymax=ymax)
+                ax[1].set_xlabel('Frequency [Hz]')
+                ax[1].set_ylabel('Spectrum')
+                ax[1].legend(('Target channel', 'Noise projection'))
+                ax[1].grid(True)
+                firstplot = False
             else:
-		# if not the first plot, just update the traces and title
-		pltitle.set_text('Coherence %s vs %s - GPS %d' % (opt.channel, channel2, gpsb))
-		line1.set_data(f, c)
-		line4.set_data(f, psd_plot[0:len(psd2)] * sqrt(c) * mask)
-            fig.savefig(os.path.expanduser(opt.dir) + '/%s.%s' % (channel2.split(':')[1], opt.plotformat), format=opt.plotformat)
+                # if not the first plot, just update the traces and title
+                pltitle.set_text('Coherence %s vs %s - GPS %d' % (opt.channel, channel2, gpsb))
+                line1.set_data(f, c)
+                line4.set_data(f, psd_plot[0:len(psd2)] * sqrt(c) * mask)
+                fig.savefig(os.path.expanduser(opt.dir) + '/%s.%s' % (channel2.split(':')[1], opt.plotformat), format=opt.plotformat)
         timing[4] = timing[4] + time.time()
 
         del ch2, c, f
-           
+
     del fig
     print "  Process %s concluded" % id
     return cohtab, idxtab, id, timing
@@ -241,20 +241,20 @@ parser.add_option("-m", "--minfs", dest="minfs",
                   default='32',
                   help="minimum sampling frequency of aux channels", metavar="MinFS")
 parser.add_option("-p", "--plot", dest="plotformat",
-		  default='png',
-		  help="plot format (png, pdf or none)", metavar="PlotFormat")
+                  default='png',
+                  help="plot format (png, pdf or none)", metavar="PlotFormat")
 parser.add_option("-N", "--nproc", dest="ncpu",
-		  default='-1',
-		  help="number of processes to lauch", metavar="NumProc")
+                  default='-1',
+                  help="number of processes to lauch", metavar="NumProc")
 parser.add_option("-C", "--calib", dest="calib",
-		  default='',
-		  help="calibration transfer function filename", metavar="Calibration")
+                  default='',
+                  help="calibration transfer function filename", metavar="Calibration")
 parser.add_option("-X", "--xlim", dest="xlim",
-		  default='',
-		  help="frequency axis limit, in the format fmin:fmax", metavar="XLim")
+                  default='',
+                  help="frequency axis limit, in the format fmin:fmax", metavar="XLim")
 parser.add_option("-Y", "--ylim", dest="ylim",
-		  default='',
-		  help="PSD y asix limits,in the format ymin:ymax", metavar="YLim")
+                  default='',
+                  help="PSD y asix limits,in the format ymin:ymax", metavar="YLim")
 
 (opt,args) = parser.parse_args()
 
@@ -381,23 +381,23 @@ fs1 = len(ch1) / dt
 npoints = pow(2,int(log((gpse - gpsb) * outfs / nav) / log(2)))
 print "Number of points = %d\n" % npoints
 
-# compute the main channels FFTs and PSD. Here I save the single segments FFTS, 
-# to reuse them later on in the CSD computation. In this way, the main channel FFTs are 
+# compute the main channels FFTs and PSD. Here I save the single segments FFTS,
+# to reuse them later on in the CSD computation. In this way, the main channel FFTs are
 # computed only once, instead of every iteration. This function returns the FFTs already
 # scaled is such a way that PSD = sum |FFT|^2, with MATLAB-like normalization.
 ch1_ffts = computeFFTs(ch1, npoints*fs1/outfs, (npoints*fs1/outfs)/2, fs1)
-psd1 = mean(abs(ch1_ffts)**2,1) 
+psd1 = mean(abs(ch1_ffts)**2,1)
 f1 = linspace(0, fs1/2, npoints*fs1/outfs/2+1)
 
 ### Read the calibration transfer function, if specified
 if opt.calib != '':
-	# load from file
-	cdata = numpy.loadtxt(opt.calib)
-	# interpolate to the right frequency bins
-	calibration = numpy.interp(f1, cdata[:,0], cdata[:,1])
+    # load from file
+    cdata = numpy.loadtxt(opt.calib)
+    # interpolate to the right frequency bins
+    calibration = numpy.interp(f1, cdata[:,0], cdata[:,1])
 else:
-	# no calibration specified, use unity
-	calibration = numpy.ones(shape(f1))	
+    # no calibration specified, use unity
+    calibration = numpy.ones(shape(f1))
 
 psd_plot = numpy.sqrt(psd1) * calibration
 
@@ -436,8 +436,8 @@ args = []
 for c,i in zip(ch2,range(len(ch2))):
     args.append([gpsb, gpse, ntop, outfs, npoints, s, opt, ch1_ffts, f1, psd1, c, i, chidx[i]])
 
-# Start all the processes 
-results = pool.map(parallelized_coherence, args) 
+# Start all the processes
+results = pool.map(parallelized_coherence, args)
 
 print ">>>>> Parallel processes finished..."
 
@@ -550,8 +550,8 @@ if len(files)>0:
                 page.td.close()
             else:
                 page.td()
-                page.td.close()            
-    
+                page.td.close()
+
         page.tr.close()
 
     page.table.close()
