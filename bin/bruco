@@ -445,8 +445,8 @@ print ">>>>> Parallel processes finished..."
 
 # first step, concatenate the tables
 x = zip(*results)
-cohtab = concatenate(x[0], axis=1)
-idxtab = concatenate(x[1], axis=1)
+cohtab = vstack(x[0])
+idxtab = vstack(x[1])
 # then sort in order of descending coherence for each bin
 for j in arange(shape(cohtab)[0]):
     ccoh = cohtab[j,:]
@@ -459,7 +459,7 @@ cohtab = cohtab[:,-ntop:]
 idxtab = idxtab[:,-ntop:]
 
 # get and save timing information
-timing = concatenate(x[3], axis=1)
+timing = vstack(x[3])
 numpy.savetxt(os.path.expanduser(opt.dir) + '/brucotiming.txt', timing)
 
 ###### Here we save the results to some files in the output directory ####################
