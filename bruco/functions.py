@@ -1,8 +1,6 @@
 # Brute force coherence (Gabriele Vajente, 2015-06-09)
 
-import nds2
 import numpy
-import os
 from pylab import *
 import time
 from scipy.signal import cheby1, lfilter
