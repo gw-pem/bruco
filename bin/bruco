@@ -49,6 +49,7 @@
 # 2015-08-19 - now bruco removes the temporary files that contains the list of channels
 #            - timing information file is saved into the output directory
 # 2015-01-01 - x3 faster plotting based on Michele Valentini's code
+# 2016-09-19 - fixed bug in output table
 
 import numpy
 import os
@@ -445,8 +446,11 @@ print ">>>>> Parallel processes finished..."
 
 # first step, concatenate the tables
 x = zip(*results)
-cohtab = vstack(x[0])
-idxtab = vstack(x[1])
+#cohtab = vstack(x[0])
+#idxtab = vstack(x[1])
+cohtab = np.concatenate(x[0], axis=1)
+idxtab = np.concatenate(x[1], axis=1)
+
 # then sort in order of descending coherence for each bin
 for j in arange(shape(cohtab)[0]):
     ccoh = cohtab[j,:]
