@@ -19,8 +19,8 @@ finally:
 # set basic metadata
 PACKAGENAME = 'bruco'
 DISTNAME = 'bruco'
-AUTHOR = 'Duncan Macleod'
-AUTHOR_EMAIL = 'duncan.macleod@ligo.org'
+AUTHOR = 'Gabriele Vajente'
+AUTHOR_EMAIL = 'gabriele.vajente@ligo.org'
 LICENSE = 'GPLv3'
 
 # Use the find_packages tool to locate all packages and modules
