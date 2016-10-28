@@ -1,4 +1,5 @@
-# Brute force coherence (Gabriele Vajente, 2015-06-09)
+# Brute force coherence (Gabriele Vajente, 2016-10-18)
+# Site independent functions
 
 import numpy
 from pylab import *
@@ -126,10 +127,3 @@ def newline_name(s):
     else:
         return s
 
-# wrapper around the LIGO function to find where data is, returns a list of files
-def find_LIGO_data(observatory, gpsb, gpse):
-    o = subprocess.Popen(["/usr/bin/gw_data_find", "-o", observatory[0],
-                          "-t", observatory[0] + "1_R", "-s", str(gpsb),
-                          "-e", str(gpse), "-u", "file"],
-                          stdout=subprocess.PIPE).communicate()[0]
-    return o.splitlines()
