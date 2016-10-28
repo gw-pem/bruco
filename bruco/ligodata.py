@@ -72,23 +72,6 @@ def getRawData(channel, gps, dt):
     global ligo_c
     global ligo_d
     
-    # create data access objects if needed
-    if ligo_c == 0:
-        print ">>>>> Creating cache...."
-        # Create the scratch directory if not exisitng
-        try:
-            os.stat(os.path.expanduser(opt.scratchdir))
-            new_scratch = False
-        except:
-            os.mkdir(os.path.expanduser(opt.scratchdir))
-            new_scratch = True
-        # find the location of the data files
-        files = find_data(opt.ifo, gpsb, gpsb+dt)
-        # create LAL cache
-        ligo_c = lal.Cache.from_urls(files)
-        ligo_d = frutils.FrameCache(ligo_c, scratchdir=os.path.expanduser(opt.scratchdir), 
-                                        verbose=True)
-
     buffer = ligo_d.fetch(channel, gps, gps+dt)
     ch1 = numpy.array(buffer)
     fs1 = len(ch1) / dt
