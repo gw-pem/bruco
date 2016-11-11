@@ -1,4 +1,4 @@
-Brute force coherence (Gabriele Vajente, 2015-10-28 vajente@caltech.edu)
+Brute force coherence (Gabriele Vajente, 2016-11-11 vajente@caltech.edu)
 
 Command line arguments (with default values)
 
@@ -81,4 +81,6 @@ CHANGELOG:
 2016-10-26 - added portability to Virgo environment
            - removed old timing code
            - when invoked without arguments, print help
-2016-10-28 - reverted to non packaged structure for simplicty
+2016-10-28 - reverted to non packaged structure for simplicity
+2016-11-11 - using direct frame file access to read data, instead of LAL cache (a couple 
+             of minutes faster)

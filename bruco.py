@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 helpstring = """
-Brute force coherence (Gabriele Vajente, 2015-10-28)
+Brute force coherence (Gabriele Vajente, 2016-11-11)
 
 Command line arguments (with default values)
 
@@ -84,7 +84,8 @@ Example:
 # 2016-10-26 - added portability to Virgo environment
 #            - removed old timing code
 # 2016-10-28 - reverted to non packaged structure for simplicty
-
+# 2016-11-11 - using direct frame file access to read data, instead of LAL cache (a couple 
+#              of minutes faster)
 
 import numpy
 import os
@@ -335,9 +336,8 @@ print
 print "Analyzing data from gps %d to %d.\n" % (gpsb, gpse)
 print
 
-
 ###### Extract the list of channels and remove undesired ones ############################
-channels, sample_rate = get_channel_list(opt, minfs, gpsb)
+channels, sample_rate = get_channel_list(opt, gpsb)
 
 # keep only channels with high enough sampling rate
 idx = find(sample_rate >= minfs)
@@ -385,6 +385,7 @@ print ">>>>> Processing all channels...."
 
 # get data for the main target channel
 ch1, fs1 = getRawData(opt.ifo + ':' + opt.channel, gpsb, gpse-gpsb)
+
 
 # check if the main channel is flat
 if min(ch1) == max(ch1):

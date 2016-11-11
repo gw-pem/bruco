@@ -9,7 +9,7 @@ sys.path.append('/users/swinkels/deploy/PythonVirgoTools/trunk/src')
 from virgotools import getChannel, FrameFile
   
 # return the list of channels    
-def get_channel_list(opt, minfs, gpsb):
+def get_channel_list(opt, gpsb):
     channels = []
     sample_rate = []
     channelMain = 'V1:' + opt.channel
