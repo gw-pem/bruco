@@ -86,6 +86,7 @@ Example:
 # 2016-10-28 - reverted to non packaged structure for simplicty
 # 2016-11-11 - using direct frame file access to read data, instead of LAL cache (a couple 
 #              of minutes faster)
+# 2017-01-04 - using resample function if sampling frequency ratio is not integer
 
 import numpy
 import os
@@ -104,6 +105,7 @@ warnings.filterwarnings("ignore")
 
 from bruco.functions import *
 from bruco.html import markup
+from bruco.multirate import *
 
 ##### Options and configurations #########################################################
 
@@ -151,9 +153,15 @@ def parallelized_coherence(args):
 
         # resample to outfs if needed
         if fs2 > outfs:
-            # here I'm using a custom decimate function, defined in functions.py
-            ch2 = decimate(ch2, int(numpy.round(fs2) / outfs))
-	    fs2 = outfs
+            # check if the ratio is an integer
+	    if int(numpy.round(fs2) / outfs) == numpy.round(fs2) / outfs:
+	    	# here I'm using a custom decimate function, defined in functions.py
+            	ch2 = decimate(ch2, int(numpy.round(fs2) / outfs))
+	   	fs2 = outfs
+	    else:
+		# use a resample function that allows non integer ratios
+		ch2 = resample(ch2, outfs, numpy.round(fs2))
+		fs2 = outfs
             
         ###### compute coherence
         # compute all the FFTs of the aux channel (those FFTs are returned already 

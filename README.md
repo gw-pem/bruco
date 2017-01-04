@@ -84,3 +84,4 @@ CHANGELOG:
 2016-10-28 - reverted to non packaged structure for simplicity
 2016-11-11 - using direct frame file access to read data, instead of LAL cache (a couple 
              of minutes faster)
+2017-01-04 - using resample function if sampling frequency ratio is not integer
