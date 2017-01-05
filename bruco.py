@@ -87,6 +87,7 @@ Example:
 # 2016-11-11 - using direct frame file access to read data, instead of LAL cache (a couple 
 #              of minutes faster)
 # 2017-01-04 - using resample function if sampling frequency ratio is not integer
+# 2017-01-05 - explicitly removing main channel from aux channel list
 
 import numpy
 import os
@@ -364,6 +365,9 @@ f.close()
 # delete excluded channels, allowing for unix-shell-like wildcards
 idx = ones(shape(channels), dtype='bool')
 for c,i in zip(channels, arange(len(channels))):
+    if c == opt.ifo + ':' + opt.channel:
+	# remove the main channel
+	idx[i] = False
     for e in excluded:
         if fnmatch.fnmatch(c, opt.ifo + ':' + e):
             idx[i] = False
