@@ -1,4 +1,4 @@
-# Brute force coherence (Gabriele Vajente, 2016-10-18)
+# Brute force coherence (Gabriele Vajente, 2017-01-22)
 # Site independent functions
 
 import numpy
@@ -63,6 +63,11 @@ def cohe_color(c):
                 s = '0' + s
             return '#ff' + s + s
 
+# factor a number
+def factors(n):    
+    return numpy.sort(reduce(list.__add__, 
+                ([i, n//i] for i in range(1, int(n**0.5) + 1) if n % i == 0)))[1:-1]
+
 # Custom decimation function, copied a long time ago from somewhere on the web
 def decimate(x, q, n=None, ftype='iir', axis=-1):
     """downsample the signal x by an integer factor q, using an order n filter
@@ -84,10 +89,22 @@ def decimate(x, q, n=None, ftype='iir', axis=-1):
         y -- the downsampled signal
 
     """
-
+    
     if type(q) != type(1):
         raise Error, "q should be an integer"
-
+    
+    # check if the user is asking for too large decimation factor
+    if q>10:
+        # compute factors
+        qf = factors(q)
+        if len(qf) != 0: 
+            # find the largest factor smaller than ten and decimate using it
+            qnew = int(next(x for x in qf[::-1] if x<=10))
+            # decimate first using the cofactor (recursive call)
+            x = decimate(x, q/qnew, n=n, ftype=ftype, axis=axis)
+            # use what's left for the next step
+            q = qnew
+        
     if n is None:
         if ftype == 'fir':
             n = 30

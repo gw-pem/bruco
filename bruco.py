@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 helpstring = """
-Brute force coherence (Gabriele Vajente, 2016-11-11)
+Brute force coherence (Gabriele Vajente, 2017-01-23)
 
 Command line arguments (with default values)
 
@@ -88,6 +88,8 @@ Example:
 #              of minutes faster)
 # 2017-01-04 - using resample function if sampling frequency ratio is not integer
 # 2017-01-05 - explicitly removing main channel from aux channel list
+# 2017-01-23 - if the decimation ratio is greater than 10, decimate in mutiple steps to
+#              avoid numerical instabilities
 
 import numpy
 import os
@@ -326,7 +328,7 @@ if opt.excluded != '':
 ###### Prepare folders and stuff for the processing loops ################################
 
 print "**********************************************************************"
-print "**** BruCo version 2016-10-26 - parallelized multicore processing ****"
+print "**** BruCo version 2017-01-23 - parallelized multicore processing ****"
 print "**********************************************************************"
 
 # determine which IFO the user wants and import the right functions
