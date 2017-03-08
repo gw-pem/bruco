@@ -90,6 +90,9 @@ Example:
 # 2017-01-05 - explicitly removing main channel from aux channel list
 # 2017-01-23 - if the decimation ratio is greater than 10, decimate in mutiple steps to
 #              avoid numerical instabilities
+# 2017-03-08 - Virgo sampling rate is not always a power of 2, and this caused a crash
+#              for some auxiliary channels with sampling rate lower than the desired
+#              output. Implemented an upsamping of the aux channel to solve the issue
 
 import numpy
 import os
@@ -165,6 +168,12 @@ def parallelized_coherence(args):
 		# use a resample function that allows non integer ratios
 		ch2 = resample(ch2, outfs, numpy.round(fs2))
 		fs2 = outfs
+        else:
+            # check if the number of FFT points is an integer, otherwise upsample
+            if int(numpy.round(fs2)/outfs*npoints) != numpy.round(fs2)/outfs*npoints:
+                ch2 = resample(ch2, outfs, numpy.round(fs2))
+                fs2 = outfs
+
             
         ###### compute coherence
         # compute all the FFTs of the aux channel (those FFTs are returned already 
