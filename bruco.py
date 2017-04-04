@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 helpstring = """
-Brute force coherence (Gabriele Vajente, 2017-01-23)
+Brute force coherence (Gabriele Vajente, 2017-04-04)
 
 Command line arguments (with default values)
 
@@ -344,7 +344,7 @@ if opt.excluded != '':
 ###### Prepare folders and stuff for the processing loops ################################
 
 print "**********************************************************************"
-print "**** BruCo version 2017-01-23 - parallelized multicore processing ****"
+print "**** BruCo version 2017-04-04 - parallelized multicore processing ****"
 print "**********************************************************************"
 
 # determine which IFO the user wants and import the right functions
