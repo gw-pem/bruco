@@ -93,6 +93,7 @@ Example:
 # 2017-03-08 - Virgo sampling rate is not always a power of 2, and this caused a crash
 #              for some auxiliary channels with sampling rate lower than the desired
 #              output. Implemented an upsamping of the aux channel to solve the issue
+# 2017-04-04 - mask frequencies above Nyquist
 
 import numpy
 import os
@@ -157,6 +158,9 @@ def parallelized_coherence(args):
             print "  Process %d: %s is flat, skipping" % (id, channel2)
             continue
 
+	# maximum frequency which is meaningful
+	maxfreq = 1e6
+
         # resample to outfs if needed
         if fs2 > outfs:
             # check if the ratio is an integer
@@ -171,7 +175,8 @@ def parallelized_coherence(args):
         else:
             # check if the number of FFT points is an integer, otherwise upsample
             if int(numpy.round(fs2)/outfs*npoints) != numpy.round(fs2)/outfs*npoints:
-                ch2 = resample(ch2, outfs, numpy.round(fs2))
+                maxfreq = fs2/2
+		ch2 = resample(ch2, outfs, numpy.round(fs2))
                 fs2 = outfs
 
             
@@ -186,7 +191,9 @@ def parallelized_coherence(args):
         # we use the full sampling PSD of the main channel, using only the bins 
         # corresponding to channel2 sampling
         c = abs(csd12)**2/(psd2 * psd1[0:len(psd2)])
-        
+       	# mask frequencies above Nyquist
+	c[f>=maxfreq] = 0
+ 
         # save coherence in summary table. Basically, cohtab has a row for each frequency 
         # bin and a number of columns which is determined by the option --top. For each 
         # frequency bin, the new coherence value is added only if it's larger than the 

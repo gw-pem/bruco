@@ -91,4 +91,5 @@ CHANGELOG:
 2017-03-08 - Virgo sampling rate is not always a power of 2, and this caused a crash
              for some auxiliary channels with sampling rate lower than the desired
              output. Implemented an upsamping of the aux channel to solve the issue
+2017-04-04 - mask frequencies above Nyquist
 
