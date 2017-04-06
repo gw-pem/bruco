@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 helpstring = """
-Brute force coherence (Gabriele Vajente, 2017-04-04)
+Brute force coherence (Gabriele Vajente, 2017-04-06)
 
 Command line arguments (with default values)
 
@@ -94,6 +94,7 @@ Example:
 #              for some auxiliary channels with sampling rate lower than the desired
 #              output. Implemented an upsamping of the aux channel to solve the issue
 # 2017-04-04 - mask frequencies above Nyquist
+# 2017-04-06 - fixed bug: first plot of each process was not saved
 
 import numpy
 import os
@@ -250,8 +251,8 @@ def parallelized_coherence(args):
                                                     (opt.channel, channel2, gpsb))
                 line1.set_data(f, c)
                 line4.set_data(f, psd_plot[0:len(psd2)] * sqrt(c) * mask)
-                fig.savefig(os.path.expanduser(opt.dir) + '/%s.%s' % \
-                        (channel2.split(':')[1], opt.plotformat), format=opt.plotformat)
+	    fig.savefig(os.path.expanduser(opt.dir) + '/%s.%s' % \
+            	(channel2.split(':')[1], opt.plotformat), format=opt.plotformat)
         
         del ch2, c, f
 
@@ -344,7 +345,7 @@ if opt.excluded != '':
 ###### Prepare folders and stuff for the processing loops ################################
 
 print "**********************************************************************"
-print "**** BruCo version 2017-04-04 - parallelized multicore processing ****"
+print "**** BruCo version 2017-04-06 - parallelized multicore processing ****"
 print "**********************************************************************"
 
 # determine which IFO the user wants and import the right functions
