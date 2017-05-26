@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 helpstring = """
-Brute force coherence (Gabriele Vajente, 2017-04-06)
+Brute force coherence (Gabriele Vajente, 2017-05-25)
 
 Command line arguments (with default values)
 
@@ -9,6 +9,13 @@ Command line arguments (with default values)
                                           (no default, must specify)
 
 --channel=OAF-CAL_DARM_DQ                 name of the main channel
+
+--file=filename.txt			  specify an ASCII file containing the data to be
+					  used as the main channel. Any channel specified 
+				          with the --channel option will be ignored.
+					  The sampling frequency will be determined from the 
+					  number of samples read from the text file and 
+					  the specified time duration
 
 --excluded=bruco_excluded_channels.txt    file containing the list of channels excluded 
                                           from the coherence computation
@@ -95,6 +102,7 @@ Example:
 #              output. Implemented an upsamping of the aux channel to solve the issue
 # 2017-04-04 - mask frequencies above Nyquist
 # 2017-04-06 - fixed bug: first plot of each process was not saved
+# 2017-05-25 - added option to load main channel from txt file
 
 import numpy
 import os
@@ -266,6 +274,9 @@ parser = OptionParser(usage=helpstring)
 parser.add_option("-c", "--channel", dest="channel",
                   default='OAF-CAL_DARM_DQ',
                   help="target channel", metavar="Channel")
+parser.add_option("-F", "--file", dest="file",
+		  default='',
+		  help="main channel filename", metavar="File")
 parser.add_option("-i", "--ifo", dest="ifo",
                   default="",
                   help="interferometer", metavar="IFO")
@@ -415,8 +426,14 @@ print "Found %d channels\n\n" % nch
 print ">>>>> Processing all channels...."
 
 # get data for the main target channel
-ch1, fs1 = getRawData(opt.ifo + ':' + opt.channel, gpsb, gpse-gpsb)
-
+if opt.file == '':
+	print "Reading main channel %s from frame" % opt.channel
+	ch1, fs1 = getRawData(opt.ifo + ':' + opt.channel, gpsb, gpse-gpsb)
+else:
+	print "Reading main channel from file %s" % opt.file
+	ch1 = numpy.loadtxt(opt.file)
+	fs1 = len(ch1)/(gpse-gpsb)
+	print "Read %d samples > sampling rate is %d" % (len(ch1), fs1)
 
 # check if the main channel is flat
 if min(ch1) == max(ch1):
@@ -527,7 +544,7 @@ for c in L:
 # open web page
 page = markup.page( )
 page.init( title="Brute force Coherences",
-           footer="(2015)  <a href=mailto:vajente@caltech.edu>vajente@caltech.edu</a>" )
+           footer="(2017)  <a href=mailto:vajente@caltech.edu>vajente@caltech.edu</a>" )
 
 
 # first section, top channels per frequency bin
