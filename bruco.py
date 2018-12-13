@@ -367,6 +367,8 @@ elif opt.ifo == 'H1' or opt.ifo == 'L1':
     from bruco.ligodata import *
 elif opt.ifo == 'V1':
     from bruco.virgodata import *
+elif opt.ifo == 'K1':
+    from bruco.kagradata import *    
 else:
     print "Unknown IFO %s" % opt.ifo
     exit()
@@ -387,8 +389,11 @@ sample_rate = sample_rate[idx]
 f = open(exc, 'r')
 L = f.readlines()
 excluded = []
+
 for c in L:
+    #print(c.split())
     c = c.split()[0]
+    #print(c)
     excluded.append(c)
 f.close()
 
