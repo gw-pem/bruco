@@ -253,7 +253,7 @@ def parallelized_coherence(args):
                     ax[1].axis(ymin=ymin, ymax=ymax)
                 ax[1].set_xlabel('Frequency [Hz]')
                 ax[1].set_ylabel('Spectrum')
-                ax[1].legend(('Target channel', 'Noise projection'))
+                ax[1].legend(('Target channel', 'Noise projection'),loc='best')
                 ax[1].grid(True)
                 firstplot = False
             else:
