@@ -18,6 +18,9 @@ Command line arguments (with default values)
 					  the specified time duration
 
 --excluded=bruco_excluded_channels.txt    file containing the list of channels excluded 
+
+--included=bruco_included_channels.txt    file containing the list of channels included 
+
                                           from the coherence computation
 
 --gpsb=1087975458                         starting time
@@ -322,7 +325,11 @@ parser.add_option("-Y", "--ylim", dest="ylim",
 parser.add_option("-e", "--excluded", dest="excluded",
                   default='',
                   help="list of channels excluded from the coherence computation", 
-                                                                    metavar="Excluded")
+                  metavar="Excluded")
+parser.add_option("-I", "--included", dest="included",
+                  default='',
+                  help="list of channels included from the coherence computation", 
+                  metavar="Included")
 parser.add_option("-T", "--tmp", dest="scratchdir",
                   default=scratchdir,
                   help="temporary file directory", metavar="Tmp")
@@ -352,6 +359,12 @@ else:
 # parse list of excluded channels. If not specified use default
 if opt.excluded != '':
     exc = opt.excluded
+    exclude = True
+
+# parse list of excluded channels. If not specified use default
+if opt.included != '':
+    exc = opt.included
+    exclude = False
     
 ###### Prepare folders and stuff for the processing loops ################################
 
@@ -391,21 +404,26 @@ L = f.readlines()
 excluded = []
 
 for c in L:
-    #print(c.split())
     c = c.split()[0]
-    #print(c)
     excluded.append(c)
 f.close()
 
 # delete excluded channels, allowing for unix-shell-like wildcards
-idx = ones(shape(channels), dtype='bool')
+if exclude:
+    idx = ones(shape(channels), dtype='bool')
+else:
+    idx = zeros(shape(channels), dtype='bool')
+    
 for c,i in zip(channels, arange(len(channels))):
     if c == opt.ifo + ':' + opt.channel:
 	# remove the main channel
-	idx[i] = False
+        idx[i] = False
     for e in excluded:
         if fnmatch.fnmatch(c, opt.ifo + ':' + e):
-            idx[i] = False
+            if exclude:
+                idx[i] = False
+            else:
+                idx[i] = True        
 
 channels = channels[idx]
 
