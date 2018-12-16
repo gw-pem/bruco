@@ -1,0 +1,45 @@
+=== ALS, LSC and VIS are excluded from sub-channels ===
+ADS*
+ALS*
+AOS*
+CAL*
+CRY*
+FEC*
+GIF*
+GRD*
+IMC*
+IOP*
+ISS*
+LAS*
+LSC*
+MZM*
+OMC*
+PEM*
+PICO*
+PLC*
+PSL*
+#VIS*
+=== End of file ===
+=== from sub-channels ===
+VIS-BS*
+VIS-ETMX*
+VIS-ETMY*
+VIS-IMMT1*
+VIS-IMMT2*
+VIS-ITMX*
+VIS-ITMY*
+VIS-MCE*
+VIS-MCI*
+VIS-MCO*
+VIS-OMMT1*
+VIS-OMMT2*
+VIS-OSTM*
+VIS-PR2*
+#VIS-PR3*
+VIS-PRM*
+VIS-SR2*
+VIS-SR3*
+VIS-SRM*
+VIS-TMSX*
+VIS-TYPEBPMASTER*
+=== End of file ===
