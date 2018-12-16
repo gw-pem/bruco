@@ -2,12 +2,15 @@ Brute force coherence (Gabriele Vajente, 2017-01-23 vajente@caltech.edu)
 
 Command line arguments (with default values)
 
---ifo                                     interferometer prefix [H1, L1, V1] 
+--ifo                                     interferometer prefix [H1, L1, V1, K1] 
                                           (no default, must specify)
 
 --channel=OAF-CAL_DARM_DQ                 name of the main channel
 
 --excluded=bruco_excluded_channels.txt    file containing the list of channels excluded 
+                                          from the coherence computation
+					  
+--included=bruco_included_channels.txt    file containing the list of channels included 
                                           from the coherence computation
 
 --gpsb=1087975458                         starting time
@@ -92,4 +95,5 @@ CHANGELOG:
              for some auxiliary channels with sampling rate lower than the desired
              output. Implemented an upsamping of the aux channel to solve the issue
 2017-04-04 - mask frequencies above Nyquist
+2018-12-16 - added include option (K.Miyo)
 
