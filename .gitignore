@@ -45,3 +45,6 @@ pip-delete-this-directory.txt
 
 # py.test cache dir
 /.cache
+
+# result dir
+result/
