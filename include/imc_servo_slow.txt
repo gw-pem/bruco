@@ -1,0 +1,16 @@
+=== All IMC are included ===
+ISS*_OUT_DQ
+PSL-IP*_OUT_DQ
+PSL-PMC*_OUT_DQ
+PSL-REFCAV*_OUT_DQ
+VIS-MC*_TM_OPLEV_PIT_OUT_DQ
+VIS-MC*_TM_OPLEV_YAW_OUT_DQ
+PEM-IMC_MIC*_OUT_DQ
+PEM-PSL_ACC*_OUT_DQ
+PEM-PSL_MIC*_OUT_DQ
+PEM-IMC_GND*X_OUT_DQ
+PEM-IMC_GND*Y_OUT_DQ
+PEM-IMC_GND*Z_OUT_DQ
+PEM-IFI_*_OUT_DQ
+=== End of file ===
+#./bruco.py --ifo=K1 --channel=IMC-SERVO_SLOW_DAQ_OUT_DQ --include=/users/Miyo/bruco/include/imc_servo_slow.txt --gpsb=1228752018 --length=1024 --outfs=256 --minfs=32 --naver=16 --dir=/users/Miyo/bruco/result/imc_servo_slow --top=10 --webtop=5
